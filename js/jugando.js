@@ -1,6 +1,6 @@
 window.addEventListener("load", iniciaJuego)
 
-
+let tabla = document.getElementById("tabla")
 let piedra = document.getElementById("piedra")
 let papel = document.getElementById("papel")
 let tijera = document.getElementById("tijera")
@@ -9,13 +9,24 @@ piedra.addEventListener("click", eleccionJugador)
 papel.addEventListener("click", eleccionJugador)
 tijera.addEventListener("click", eleccionJugador)
 
-let resultado = document.getElementById("resultado")
-resultado.addEventListener("click",batalla)
+// let resultado = document.getElementById("resultado")
+// resultado.addEventListener("click",batalla)
+let cerrar =document.getElementById ("cerrar")
+cerrar.addEventListener("click", esconder)
+let caja = document.getElementById("caja")
+let marcador=document.getElementById("marcador")
+marcador.addEventListener("click",mostrar)
+
 
 let jugador = ""
 let pc= ""
-let derrotas= ""
-let victorias=""
+let victorias=[0]
+let empates=[0]
+let derrotas=[0]
+let derrotasJSON= ""
+let victoriasJSON=""
+let empatesJSON =""
+
 function iniciaJuego(){
     let botonEleccionJugador = document.getElementById ("eleccion-jugador")
     // botonEleccionJugador.addEventListener("click", eleccionJugador)
@@ -73,7 +84,9 @@ function eleccionPc (){
             timer: 1500
     })
 }
-    pc=aleatorioPc
+
+setTimeout(batalla, 2000)
+pc=aleatorioPc
 
 
 }
@@ -84,26 +97,167 @@ function aleatorio(min, max){
 
 
 function batalla(){
-
+  
     if(jugador == pc){
+        if (empatesJSON[0] != 0 ){
+            empates++
+            empatesJSON = JSON.stringify(empates)
+            localStorage.setItem("Empates", empatesJSON)
+        }else {
+            empates.push(1)
+            empatesJSON = JSON.stringify(empates)
+            localStorage.setItem("Empates", empatesJSON)
+
+        }
         Swal.fire ({title:"Empate, juega de nuevo",
         showConfirmButton: false,
         timer: 1500
     })
         
     }else if((jugador == 1 && pc == 3) || (jugador == 2 && pc == 1) || (jugador == 3 && pc == 2)){
-        victorias = victorias +1
+        
+        if (victoriasJSON[0] != 0) {
+            victorias++ 
+            victoriasJSON = JSON.stringify(victorias)
+            localStorage.setItem("Victorias", victoriasJSON)
+        }else{
+            victorias.push(1) 
+            victoriasJSON = JSON.stringify(victorias)
+            localStorage.setItem("Victorias", victoriasJSON)
+
+        }
+
         Swal.fire ({title:"Ganaste, felicitaciones 👌",
         showConfirmButton: false,
         timer: 1500
     })
        
     }else{
-        derrotas = derrotas + 1
+        
+        if (derrotasJSON[0] != 0) {
+            derrotas++
+            derrotasJSON = JSON.stringify(derrotas)
+            localStorage.setItem("Derrotas", derrotasJSON)
+
+        }else {
+            derrotas.push(1)
+            derrotasJSON = JSON.stringify(derrotas)
+            localStorage.setItem("Derrotas", derrotasJSON)
+
+        }
         Swal.fire ({title:"Perdiste, mejor suerte la próxima",
         showConfirmButton: false,
         timer: 1500
     })
     } 
+    renderizarTabla(victorias,empates,derrotas)
+}
+comprobar()
+function comprobar() {
+    if (localStorage.getItem("Victorias") && localStorage.getItem("Empates") && localStorage.getItem("Derrotas")){
+        victorias = JSON.parse(localStorage.getItem("Victorias"))
+        empates = JSON.parse(localStorage.getItem("Empates"))
+        derrotas = JSON.parse(localStorage.getItem("Derrotas"))
+        renderizarTabla(victorias,empates,derrotas)
+    }
+    else if (localStorage.getItem("Victorias") && localStorage.getItem("Empates")){
+        victorias = JSON.parse(localStorage.getItem("Victorias"))
+        empates = JSON.parse(localStorage.getItem("Empates"))
+        renderizarTabla(victorias,empates,0)
+    }
+    else if (localStorage.getItem("Victorias") && localStorage.getItem("Derrotas")){
+        victorias = JSON.parse(localStorage.getItem("Victorias"))
+        derrotas = JSON.parse(localStorage.getItem("Derrotas"))
+        renderizarTabla(victorias,0,derrotas)
+    }
+    else if (localStorage.getItem("Empates") && localStorage.getItem("Derrotas")){
+        empates = JSON.parse(localStorage.getItem("Empates"))
+        derrotas = JSON.parse(localStorage.getItem("Derrotas"))
+        renderizarTabla(0,empates,derrotas)
+    }
+    else if (localStorage.getItem("Victorias")){
+        victorias = JSON.parse(localStorage.getItem("Victorias"))
+        empates= 0
+        derrotas=0
+        renderizarTabla(victorias,empates,derrotas)
+    }
+    else if (localStorage.getItem("Empates")){
+        empates = JSON.parse(localStorage.getItem("Empates"))
+        victorias= 0
+        derrotas =0
+        renderizarTabla(victorias,empates,derrotas)
+    }
+    else if (localStorage.getItem("Derrotas")){
+        derrotas = JSON.parse(localStorage.getItem("Derrotas"))
+        victorias=0
+        empates=0
+        renderizarTabla(victorias,empates,derrotas)
+    }
+    else {
+        renderizarTablaVacia()
+    }
+}
 
+function renderizarTabla (v,e,d) {
+    tabla.innerHTML=""
+    let res = document.createElement("div")
+            res.innerHTML = `
+                <div class="tabla">
+                <div style="flex:1"><p>${v}</p></div>
+                <div style="flex:1"><p>${e}</p></div>
+                <div style="flex:1"><p>${d}</p></div>
+                </div>
+                <button id="nuevo">Juego nuevo</button>
+                `
+            tabla.append(res)
+            let nuevo =document.getElementById("nuevo")
+            nuevo.addEventListener("click", borrar)
+            comprobar()
+}
+
+function renderizarTablaVacia (v,e,d) {
+    tabla.innerHTML=""
+    let res = document.createElement("div")
+        
+            res.innerHTML = `
+                <div class="tabla">
+                <div style="flex:1"><p>0</p></div>
+                <div style="flex:1"><p>0</p></div>
+                <div style="flex:1"><p>0</p></div>
+                `
+            tabla.append(res)
+}
+
+function mostrar() {
+    caja.className="caja"
+}
+function esconder (){
+    caja.className="esconder"
+}
+function borrar (){
+    localStorage.removeItem("Victorias")
+    localStorage.removeItem("Empates")
+    localStorage.removeItem("Derrotas")
+        Swal.fire({
+            title: '<hr><strong>Gracias por la partida!</strong><br><br><br>',
+            imageUrl: 'https://www.shutterstock.com/image-vector/monkeys-saying-see-hear-speak-260nw-1395334604.jpg',
+            imageHeight: 100,
+            imageAlt: 'logo',
+            icon: "success",
+            showConfirmButton: false,
+            backdrop: `rgba(193, 188, 190, 0.65)`,
+            timer: 2500,
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+            }
+        })
+       
+        caja.className="esconder"
+        victorias = []
+        empates = []
+        derrotas = []
+        renderizarTablaVacia(victorias,empates,derrotas)
 }
